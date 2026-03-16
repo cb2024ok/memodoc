@@ -58,3 +58,67 @@
 - **코드 저장소**: git@github.com:cb2024ok/esp32-robot.git
 - **수학적 기초**: 극좌표, 행렬, 역삼각함수, 원의 방정식 $(x - a)^2 + (y - b)^2 = r^2$ 사용.
 - **상태**: 현재 RDS3225 모터 배송 대기 중. 모터 도착 후 하드웨어 이식 및 테스트 예정.
+
+## --- 20260317 Load -----
+
+# 🤖 로봇 팔 제어 시스템 기술 문서 (RDS3225 이식 프로젝트)
+
+## 1. 프로젝트 개요
+
+- **목표**: 사과 깎기 지능형 로봇 팔 제작 [cite: 2026-03-04].
+- **핵심 철학**: 안정성 우선, 평화로운 기술 지향 [cite: 2026-03-04].
+- **기술 스택**: Rust (임베디드), Swift (앱), BLE (무선 제어) [cite: 2026-03-04].
+
+## 2. 수학적 기반 (Kinematics & Control)
+
+### 🔹 역기구학 (Inverse Kinematics)
+
+로봇 팔의 손끝 좌표 (x, y)를 기반으로 각 관절의 각도 θ1, θ2를 계산하여 모터를 제어함 [cite: 2026-03-17].
+
+- **코사인 법칙**: cos(θ2) = (x^2 + y^2 - l1^2 - l2^2) / (2 _ l1 _ l2) [cite: 2026-03-17]
+- **각도 계산**: θ1 = atan2(y, x) - atan2(l2 _ sin(θ2), l1 + l2 _ cos(θ2)) [cite: 2026-03-17]
+
+### 🔹 안정성 가드 (Safety Logic)
+
+물리적 한계를 넘어선 동작을 방지하기 위해 Rust의 타입 시스템과 가드 로직을 활용함 [cite: 2026-03-17].
+
+- **팔꿈치 설정**: `ElbowConfig::Up` 또는 `ElbowConfig::Down`을 명시하여 동작 의도 명확화 [cite: 2026-03-17].
+- **범위 보호**: 도달 불가능한 좌표 입력 시 `None`을 반환하여 모터 과부하 및 오작동 방지 [cite: 2026-03-17].
+
+## 3. Rust 구현 코드 패턴
+
+```rust
+pub enum ElbowConfig {
+    Up,
+    Down,
+}
+
+pub struct JointAngles {
+    pub theta1: f32,
+    pub theta2: f32,
+}
+
+pub fn calculate_ik(x: f32, y: f32, l1: f32, l2: f32, config: ElbowConfig) -> Option<JointAngles> {
+    let dist_sq = x * x + y * y;
+    // 도달 가능성 검증 (안정성 가드)
+    if dist_sq > (l1 + l2).powi(2) || dist_sq < (l1 - l2).powi(2) {
+        return None;
+    }
+    // ... (상세 계산 로직)
+    Some(JointAngles { theta1, theta2 })
+}
+```
+
+### 4. 향후 로드맵 (Checkpoint)
+
+        Step 1: RDS3225 모터 이식 및 제어 안정화 [cite: 2026-03-04].
+
+        Step 2: ESP32-P4 네트워크 및 통신 안정화 (BLE 자동 재연결) [cite: 2026-03-04].
+
+        Step 3: 기구학 및 PID 제어 기반 정밀도 향상 [cite: 2026-03-04].
+
+        Step 4: 카메라/LiDAR 연동 및 객체 인지 [cite: 2026-03-04].
+
+        Step 5: Gemini/Grok API 연동 및 지능형 판단 [cite: 2026-03-04].
+
+        Step 6: N100 에지 컴퓨팅으로 시스템 전환 [cite: 2026-03-04].
